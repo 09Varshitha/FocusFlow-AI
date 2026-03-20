@@ -1,0 +1,163 @@
+[
+  {
+    "day": "Mon",
+    "tasks": [
+      {
+        "subject": "maths",
+        "duration": 2,
+        "concepts": 5,
+        "problems": 5
+      },
+      {
+        "subject": "chemistry",
+        "duration": 2,
+        "concepts": 6,
+        "problems": 6
+      },
+      {
+        "subject": "physics",
+        "duration": 2,
+        "concepts": 3,
+        "problems": 3
+      }
+    ]
+  },
+  {
+    "day": "Tue",
+    "tasks": [
+      {
+        "subject": "maths",
+        "duration": 2,
+        "concepts": 6,
+        "problems": 6
+      },
+      {
+        "subject": "chemistry",
+        "duration": 2,
+        "concepts": 7,
+        "problems": 7
+      },
+      {
+        "subject": "physics",
+        "duration": 2,
+        "concepts": 4,
+        "problems": 4
+      }
+    ]
+  },
+  {
+    "day": "Wed",
+    "tasks": [
+      {
+        "subject": "maths",
+        "duration": 2,
+        "concepts": 0,
+        "problems": 0
+      },
+      {
+        "subject": "chemistry",
+        "duration": 2,
+        "concepts": 0,
+        "problems": 0
+      },
+      {
+        "subject": "physics",
+        "duration": 2,
+        "concepts": 0,
+        "problems": 0
+      }
+    ]
+  },
+  {
+    "day": "Thu",
+    "tasks": [
+      {
+        "subject": "maths",
+        "duration": 2,
+        "concepts": 0,
+        "problems": 0
+      },
+      {
+        "subject": "chemistry",
+        "duration": 2,
+        "concepts": 0,
+        "problems": 0
+      },
+      {
+        "subject": "physics",
+        "duration": 2,
+        "concepts": 0,
+        "problems": 0
+      }
+    ]
+  },
+  {
+    "day": "Fri",
+    "tasks": [
+      {
+        "subject": "maths",
+        "duration": 2,
+        "concepts": 0,
+        "problems": 0
+      },
+      {
+        "subject": "chemistry",
+        "duration": 2,
+        "concepts": 0,
+        "problems": 0
+      },
+      {
+        "subject": "physics",
+        "duration": 2,
+        "concepts": 0,
+        "problems": 0
+      }
+    ]
+  },
+  {
+    "day": "Sat",
+    "tasks": [
+      {
+        "subject": "maths",
+        "duration": 2,
+        "concepts": 0,
+        "problems": 0
+      },
+      {
+        "subject": "chemistry",
+        "duration": 2,
+        "concepts": 0,
+        "problems": 0
+      },
+      {
+        "subject": "physics",
+        "duration": 2,
+        "concepts": 0,
+        "problems": 0
+      }
+    ]
+  },
+  {
+    "day": "Sun",
+    "tasks": [
+      {
+        "subject": "maths",
+        "duration": 2,
+        "concepts": 0,
+        "problems": 0
+      },
+      {
+        "subject": "chemistry",
+        "duration": 2,
+        "concepts": 0,
+        "problems": 0
+      },
+      {
+        "subject": "physics",
+        "duration": 2,
+        "concepts": 0,
+        "problems": 0
+      }
+    ]
+  }
+]

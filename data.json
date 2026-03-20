@@ -1,0 +1,332 @@
+{
+  "users": {
+    "varshitha450@gmail.com": {
+      "password": "123456",
+      "schedule": [
+        {
+          "day": "Mon",
+          "tasks": [
+            {
+              "subject": "dsa",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 3,
+              "actualTime": 0
+            },
+            {
+              "subject": "cn",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 3,
+              "actualTime": 0
+            }
+          ]
+        },
+        {
+          "day": "Tue",
+          "tasks": [
+            {
+              "subject": "dsa",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 3,
+              "actualTime": 0
+            },
+            {
+              "subject": "cn",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 3,
+              "actualTime": 0
+            }
+          ]
+        },
+        {
+          "day": "Wed",
+          "tasks": [
+            {
+              "subject": "dsa",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 3,
+              "actualTime": 0
+            },
+            {
+              "subject": "cn",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 3,
+              "actualTime": 0
+            }
+          ]
+        },
+        {
+          "day": "Thu",
+          "tasks": [
+            {
+              "subject": "dsa",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 3,
+              "actualTime": 0
+            },
+            {
+              "subject": "cn",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 3,
+              "actualTime": 0
+            }
+          ]
+        },
+        {
+          "day": "Fri",
+          "tasks": [
+            {
+              "subject": "dsa",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 3,
+              "actualTime": 0
+            },
+            {
+              "subject": "cn",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 3,
+              "actualTime": 0
+            }
+          ]
+        },
+        {
+          "day": "Sat",
+          "tasks": [
+            {
+              "subject": "dsa",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 3,
+              "actualTime": 0
+            },
+            {
+              "subject": "cn",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 3,
+              "actualTime": 0
+            }
+          ]
+        },
+        {
+          "day": "Sun",
+          "tasks": [
+            {
+              "subject": "dsa",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 3,
+              "actualTime": 0
+            },
+            {
+              "subject": "cn",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 3,
+              "actualTime": 0
+            }
+          ]
+        }
+      ]
+    },
+    "varshitha@gmail.com": {
+      "password": "Babblu@09",
+      "schedule": [
+        {
+          "day": "Mon",
+          "tasks": [
+            {
+              "subject": "dsa",
+              "concepts": 5,
+              "problems": 5,
+              "plannedTime": 2,
+              "actualTime": 0,
+              "time": 2
+            },
+            {
+              "subject": "dbms",
+              "concepts": 6,
+              "problems": 7,
+              "plannedTime": 2,
+              "actualTime": 0,
+              "time": 1
+            },
+            {
+              "subject": "os",
+              "concepts": 5,
+              "problems": 10,
+              "plannedTime": 2,
+              "actualTime": 0,
+              "time": 1
+            }
+          ]
+        },
+        {
+          "day": "Tue",
+          "tasks": [
+            {
+              "subject": "dsa",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 2,
+              "actualTime": 0
+            },
+            {
+              "subject": "dbms",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 2,
+              "actualTime": 0
+            },
+            {
+              "subject": "os",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 2,
+              "actualTime": 0
+            }
+          ]
+        },
+        {
+          "day": "Wed",
+          "tasks": [
+            {
+              "subject": "dsa",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 2,
+              "actualTime": 0
+            },
+            {
+              "subject": "dbms",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 2,
+              "actualTime": 0
+            },
+            {
+              "subject": "os",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 2,
+              "actualTime": 0
+            }
+          ]
+        },
+        {
+          "day": "Thu",
+          "tasks": [
+            {
+              "subject": "dsa",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 2,
+              "actualTime": 0
+            },
+            {
+              "subject": "dbms",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 2,
+              "actualTime": 0
+            },
+            {
+              "subject": "os",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 2,
+              "actualTime": 0
+            }
+          ]
+        },
+        {
+          "day": "Fri",
+          "tasks": [
+            {
+              "subject": "dsa",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 2,
+              "actualTime": 0
+            },
+            {
+              "subject": "dbms",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 2,
+              "actualTime": 0
+            },
+            {
+              "subject": "os",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 2,
+              "actualTime": 0
+            }
+          ]
+        },
+        {
+          "day": "Sat",
+          "tasks": [
+            {
+              "subject": "dsa",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 2,
+              "actualTime": 0
+            },
+            {
+              "subject": "dbms",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 2,
+              "actualTime": 0
+            },
+            {
+              "subject": "os",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 2,
+              "actualTime": 0
+            }
+          ]
+        },
+        {
+          "day": "Sun",
+          "tasks": [
+            {
+              "subject": "dsa",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 2,
+              "actualTime": 0
+            },
+            {
+              "subject": "dbms",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 2,
+              "actualTime": 0
+            },
+            {
+              "subject": "os",
+              "concepts": 0,
+              "problems": 0,
+              "plannedTime": 2,
+              "actualTime": 0
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

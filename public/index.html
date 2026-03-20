@@ -1,0 +1,198 @@
+<!-- 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Study Planner</title> -->
+
+  <!-- Fonts -->
+  <!-- <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"> -->
+
+  <!-- CSS -->
+  <!-- <link rel="stylesheet" href="style.css"> -->
+
+  <!-- Chart.js -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<div class="container"> -->
+
+  <!-- HEADER -->
+  <!-- <header>
+    <h1>⚡ AI Study Planner</h1>
+    <p class="subtitle">Plan smarter. Track better. Improve faster.</p>
+  </header> -->
+
+  <!-- INPUT SECTION -->
+  <!-- <div class="card top">
+    <input id="subjects" placeholder="Enter subjects (e.g. Math, Physics, DSA)">
+    <input id="hours" type="number" placeholder="Hours per day">
+    <button onclick="generate()">🚀 Generate Plan</button>
+  </div> -->
+
+  <!-- DASHBOARD -->
+  <!-- <div class="dashboard">
+    <div class="dash-card">
+      🔥 <span>Streak</span>
+      <h2 id="streak">0</h2>
+    </div>
+
+    <div class="dash-card">
+      🎯 <span>Progress</span>
+      <h2 id="progress">0%</h2>
+    </div>
+  </div> -->
+
+  <!-- CALENDAR -->
+  <!-- <div class="card">
+    <h2>📅 Study Calendar</h2>
+    <div id="calendar" class="calendar-empty">
+      <p>No schedule yet. Generate a plan to begin 🚀</p>
+    </div>
+  </div> -->
+
+  <!-- GRAPH -->
+  <!-- <div class="card">
+    <h2>📊 Performance Analytics</h2>
+    <canvas id="chart"></canvas>
+  </div> -->
+
+  <!-- AI INSIGHTS -->
+  <!-- <div class="card">
+    <h2>🤖 AI Insights</h2>
+
+    <div class="ai-controls">
+      <button id="aiBtn" onclick="getAI()">Generate Insights</button>
+      <button onclick="speakAI()">🔊 Speak</button>
+    </div>
+
+    <div id="aiBox" class="ai-cards">
+      <p class="empty-ai">No insights yet. Generate AI feedback.</p>
+    </div>
+  </div>
+
+</div>
+<script src="script.js"></script>
+</body>
+</html> -->
+
+<!-- Add Timer UI (index.html) -->
+<!-- <div class="card">
+  <h2>⏱ Pomodoro Timer</h2>
+
+  <select id="subjectSelect"></select>
+
+  <div class="timer">
+    <h1 id="timer">25:00</h1>
+    <button onclick="startTimer()">Start</button>
+    <button onclick="stopTimer()">Stop</button>
+  </div>
+</div> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Study Planner</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<!-- 🔐 LOGIN PAGE -->
+<div id="loginPage" class="card" style="max-width:400px;margin:60px auto;text-align:center;">
+  
+  <h2>🔐 Login</h2>
+
+  <input id="email" type="email" placeholder="Enter Email" required>
+  <input id="password" type="password" placeholder="Enter Password" required>
+
+  <div style="margin-top:15px;">
+    <button onclick="login()">Login</button>
+    <button onclick="register()">Register</button>
+  </div>
+
+</div>
+
+<!-- 🚀 MAIN APP -->
+<div class="container" id="app" style="display:none;">
+
+  <!-- HEADER -->
+  <header>
+    <h1>⚡ AI Study Planner</h1>
+    <p class="subtitle">Plan smarter. Track better. Improve faster.</p>
+    <button onclick="logout()">🚪 Logout</button>
+  </header>
+
+  <!-- INPUT -->
+  <div class="card top">
+    <input id="subjects" placeholder="Enter subjects (e.g. DSA, DBMS, OS)">
+    <input id="hours" type="number" placeholder="Hours per day">
+    <button onclick="generate()">🚀 Generate Plan</button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="dashboard">
+    <div class="dash-card">
+      🔥 <span>Streak</span>
+      <h2 id="streak">0</h2>
+    </div>
+
+    <div class="dash-card">
+      🎯 <span>Progress</span>
+      <h2 id="progress">0%</h2>
+    </div>
+  </div>
+
+  <!-- CALENDAR -->
+  <div class="card">
+    <h2>📅 Study Calendar</h2>
+    <div id="calendar"></div>
+  </div>
+
+  <!-- GRAPH -->
+  <div class="card">
+    <h2>📊 Performance Analytics</h2>
+    <canvas id="chart"></canvas>
+  </div>
+
+  <!-- POMODORO -->
+  <div class="card">
+    <h2>⏱ Pomodoro Timer</h2>
+
+    <select id="subjectSelect"></select>
+
+    <h1 id="timer">25:00</h1>
+
+    <button onclick="startTimer()">Start</button>
+    <button onclick="stopTimer()">Stop</button>
+  </div>
+
+  <!-- AI -->
+  <div class="card">
+    <h2>🤖 AI Insights</h2>
+
+    <div class="ai-controls">
+      <button id="aiBtn" onclick="getAI()">Generate Insights</button>
+      <button onclick="speakAI()">🔊 Speak</button>
+    </div>
+
+    <div id="aiBox" class="ai-cards">
+      <p class="empty-ai">No insights yet</p>
+    </div>
+  </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

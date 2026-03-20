@@ -1,0 +1,152 @@
+[
+  {
+    "day": "Mon",
+    "tasks": [
+      {
+        "subject": "maths",
+        "duration": 2,
+        "status": "Pending",
+        "concepts": 2,
+        "problems": 5
+      },
+      {
+        "subject": "chemistry",
+        "duration": 2,
+        "status": "Pending",
+        "concepts": 5,
+        "problems": 10
+      },
+      {
+        "subject": "physics",
+        "duration": 2,
+        "status": "Pending"
+      }
+    ]
+  },
+  {
+    "day": "Tue",
+    "tasks": [
+      {
+        "subject": "maths",
+        "duration": 2,
+        "status": "Pending",
+        "concepts": 3,
+        "problems": 8
+      },
+      {
+        "subject": "chemistry",
+        "duration": 2,
+        "status": "Pending",
+        "concepts": 4,
+        "problems": 12
+      },
+      {
+        "subject": "physics",
+        "duration": 2,
+        "status": "Pending"
+      }
+    ]
+  },
+  {
+    "day": "Wed",
+    "tasks": [
+      {
+        "subject": "maths",
+        "duration": 2,
+        "status": "Pending",
+        "concepts": 6,
+        "problems": 4
+      },
+      {
+        "subject": "chemistry",
+        "duration": 2,
+        "status": "Pending"
+      },
+      {
+        "subject": "physics",
+        "duration": 2,
+        "status": "Pending"
+      }
+    ]
+  },
+  {
+    "day": "Thu",
+    "tasks": [
+      {
+        "subject": "maths",
+        "duration": 2,
+        "status": "Pending"
+      },
+      {
+        "subject": "chemistry",
+        "duration": 2,
+        "status": "Pending"
+      },
+      {
+        "subject": "physics",
+        "duration": 2,
+        "status": "Pending"
+      }
+    ]
+  },
+  {
+    "day": "Fri",
+    "tasks": [
+      {
+        "subject": "maths",
+        "duration": 2,
+        "status": "Pending"
+      },
+      {
+        "subject": "chemistry",
+        "duration": 2,
+        "status": "Pending"
+      },
+      {
+        "subject": "physics",
+        "duration": 2,
+        "status": "Pending"
+      }
+    ]
+  },
+  {
+    "day": "Sat",
+    "tasks": [
+      {
+        "subject": "maths",
+        "duration": 2,
+        "status": "Pending"
+      },
+      {
+        "subject": "chemistry",
+        "duration": 2,
+        "status": "Pending"
+      },
+      {
+        "subject": "physics",
+        "duration": 2,
+        "status": "Pending"
+      }
+    ]
+  },
+  {
+    "day": "Sun",
+    "tasks": [
+      {
+        "subject": "maths",
+        "duration": 2,
+        "status": "Pending"
+      },
+      {
+        "subject": "chemistry",
+        "duration": 2,
+        "status": "Pending"
+      },
+      {
+        "subject": "physics",
+        "duration": 2,
+        "status": "Pending"
+      }
+    ]
+  }
+]
