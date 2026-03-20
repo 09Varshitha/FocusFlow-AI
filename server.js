@@ -1,4 +1,3 @@
-
 require("dotenv").config();
 const express = require("express");
 const fs = require("fs");
@@ -8,14 +7,31 @@ const OpenAI = require("openai");
 const app = express();
 app.use(express.json());
 
-// 🔥 CORS CONFIGURATION
-// Replace with your actual frontend URL from Netlify
+// 🔥 PROPER CORS CONFIGURATION
+const allowedOrigins = [
+  "http://localhost:3000",                      // local dev
+  "https://stately-praline-a35df9.netlify.app" // your Netlify frontend
+];
+
 app.use(cors({
-  origin: [
-    "http://localhost:3000",                             // local dev
-    "https://stately-praline-a35df9.netlify.app/"        // your live frontend URL
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  origin: function(origin, callback){
+    // allow requests with no origin (like Postman or curl)
+    if(!origin) return callback(null, true);
+    if(allowedOrigins.indexOf(origin) === -1){
+      const msg = `The CORS policy for this site does not allow access from the specified Origin.`;
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
+  allowedHeaders: ["Content-Type"],
+  credentials: true
+}));
+
+// Handle preflight OPTIONS request for all routes
+app.options("*", cors({
+  origin: allowedOrigins,
+  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
   allowedHeaders: ["Content-Type"],
   credentials: true
 }));
