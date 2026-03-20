@@ -15,9 +15,9 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function(origin, callback){
-    // allow requests with no origin (like Postman or curl)
+    // allow requests with no origin (Postman, curl, server-to-server)
     if(!origin) return callback(null, true);
-    if(allowedOrigins.indexOf(origin) === -1){
+    if(!allowedOrigins.includes(origin)){
       const msg = `The CORS policy for this site does not allow access from the specified Origin.`;
       return callback(new Error(msg), false);
     }
@@ -28,13 +28,7 @@ app.use(cors({
   credentials: true
 }));
 
-// Handle preflight OPTIONS request for all routes
-app.options("*", cors({
-  origin: allowedOrigins,
-  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
-  allowedHeaders: ["Content-Type"],
-  credentials: true
-}));
+// ✅ Remove app.options("*") — Express v5 does not allow wildcard like that
 
 app.use(express.static("public"));
 
@@ -70,7 +64,6 @@ function writeData(data) {
 /* =========================
    AUTH ROUTES
 ========================= */
-
 // REGISTER
 app.post("/register", (req, res) => {
   try {
@@ -108,7 +101,6 @@ app.post("/login", (req, res) => {
 /* =========================
    SCHEDULE
 ========================= */
-
 function generateSchedule(subjects, hours) {
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   subjects = subjects.map(s => s.trim()).filter(Boolean);
@@ -177,7 +169,6 @@ app.post("/save", (req, res) => {
 /* =========================
    🤖 AI ROUTE
 ========================= */
-
 app.post("/ai", async (req, res) => {
   try {
     const { schedule } = req.body;
@@ -228,7 +219,6 @@ Consistency beats intensity 🚀
 /* =========================
    SERVER
 ========================= */
-
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
