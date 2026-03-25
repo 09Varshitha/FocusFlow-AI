@@ -377,12 +377,13 @@
 
 
 
+// For Vercel deployment with API routes
+const BASE_URL = window.location.origin + "/api";
 let chart;
 let aiText = "";
 let currentUser = localStorage.getItem("user") || "";
 
-// For Vercel deployment with API routes
-const BASE_URL = window.location.origin + "/api";
+
 
 /* =========================
    SAFE FETCH HELPER

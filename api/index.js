@@ -274,11 +274,11 @@ function writeData(data) {
   }
 }
 
-app.get("/test", (req, res) => {
+app.get("/api/test", (req, res) => {
   res.json({ status: "Server running ✅" });
 });
 
-app.post("/register", (req, res) => {
+app.post("/api/register", (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -306,7 +306,7 @@ app.post("/register", (req, res) => {
   }
 });
 
-app.post("/login", (req, res) => {
+app.post("/api/login", (req, res) => {
   try {
     const { email, password } = req.body;
     const data = readData();
@@ -346,7 +346,7 @@ function generateSchedule(subjects, hours) {
   }));
 }
 
-app.post("/generate", (req, res) => {
+app.post("/api/generate", (req, res) => {
   try {
     const { subjects, hours, user } = req.body;
     const data = readData();
@@ -365,7 +365,7 @@ app.post("/generate", (req, res) => {
   }
 });
 
-app.get("/data", (req, res) => {
+app.get("/api/data", (req, res) => {
   try {
     const user = req.query.user;
     const data = readData();
@@ -379,7 +379,7 @@ app.get("/data", (req, res) => {
   }
 });
 
-app.post("/save", (req, res) => {
+app.post("/api/save", (req, res) => {
   try {
     const { user, schedule } = req.body;
     const data = readData();
@@ -398,7 +398,7 @@ app.post("/save", (req, res) => {
   }
 });
 
-app.post("/ai", (req, res) => {
+app.post("/api/ai", (req, res) => {
   try {
     res.json({ text: "AI working successfully 🚀" });
   } catch (err) {
