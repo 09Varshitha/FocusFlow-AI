@@ -243,7 +243,7 @@ const app = express();
 app.use(express.json());
 
 /* =========================
-   CORS FIRST (IMPORTANT)
+   CORS
 ========================= */
 
 const allowedOrigins = [
@@ -283,8 +283,6 @@ app.use(
   )
 );
 
-/* ROOT ROUTE */
-
 app.get("/", (req, res) => {
   res.sendFile(
     path.join(__dirname, "..", "index.html")
@@ -292,18 +290,25 @@ app.get("/", (req, res) => {
 });
 
 /* =========================
-   DATA FILE (SERVERLESS SAFE)
+   FILE LOCATION (SERVERLESS SAFE)
 ========================= */
 
 const FILE = process.env.VERCEL
   ? "/tmp/data.json"
   : path.join(__dirname, "..", "data.json");
 
-/* CREATE FILE IF NOT EXISTS */
+/* =========================
+   ENSURE FILE EXISTS
+========================= */
 
 function ensureFile() {
-
   try {
+
+    const dir = path.dirname(FILE);
+
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
 
     if (!fs.existsSync(FILE)) {
 
@@ -319,22 +324,17 @@ function ensureFile() {
     console.error("FILE INIT ERROR:", err);
 
   }
-
 }
 
-ensureFile();
-
-/* SAFE READ */
+/* =========================
+   SAFE READ
+========================= */
 
 function readData() {
 
   try {
 
-    if (!fs.existsSync(FILE)) {
-
-      return { users: {} };
-
-    }
+    ensureFile();
 
     let raw = fs.readFileSync(
       FILE,
@@ -342,9 +342,7 @@ function readData() {
     );
 
     if (!raw) {
-
       return { users: {} };
-
     }
 
     return JSON.parse(raw);
@@ -359,11 +357,15 @@ function readData() {
 
 }
 
-/* SAFE WRITE */
+/* =========================
+   SAFE WRITE
+========================= */
 
 function writeData(data) {
 
   try {
+
+    ensureFile();
 
     fs.writeFileSync(
       FILE,
@@ -379,7 +381,7 @@ function writeData(data) {
 }
 
 /* =========================
-   AUTH ROUTES
+   REGISTER
 ========================= */
 
 app.post("/register", (req, res) => {
@@ -421,6 +423,10 @@ app.post("/register", (req, res) => {
 
 });
 
+/* =========================
+   LOGIN
+========================= */
+
 app.post("/login", (req, res) => {
 
   try {
@@ -456,7 +462,7 @@ app.post("/login", (req, res) => {
 });
 
 /* =========================
-   SCHEDULE
+   GENERATE SCHEDULE
 ========================= */
 
 function generateSchedule(
