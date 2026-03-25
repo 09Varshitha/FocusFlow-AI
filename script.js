@@ -381,6 +381,7 @@ let chart;
 let aiText = "";
 let currentUser = localStorage.getItem("user") || "";
 
+// For Vercel deployment with API routes
 const BASE_URL = window.location.origin + "/api";
 
 /* =========================
@@ -390,12 +391,19 @@ async function safeFetch(url, options = {}) {
     const res = await fetch(url, options);
     const text = await res.text();
 
+    let data;
     try {
-        return JSON.parse(text);
+        data = text ? JSON.parse(text) : {};
     } catch {
         console.error("Server returned non-JSON:", text);
-        throw new Error("Server error. Please try again.");
+        throw new Error(`Server error (${res.status})`);
     }
+
+    if (!res.ok) {
+        throw new Error(data.error || `Request failed (${res.status})`);
+    }
+
+    return data;
 }
 
 /* =========================
@@ -404,6 +412,11 @@ async function safeFetch(url, options = {}) {
 async function login() {
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value.trim();
+
+    if (!email || !password) {
+        alert("Enter email and password");
+        return;
+    }
 
     try {
         const data = await safeFetch(`${BASE_URL}/login`, {
@@ -429,6 +442,11 @@ async function register() {
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value.trim();
 
+    if (!email || !password) {
+        alert("Enter email and password");
+        return;
+    }
+
     try {
         const data = await safeFetch(`${BASE_URL}/register`, {
             method: "POST",
@@ -449,6 +467,7 @@ async function register() {
 
 function logout() {
     localStorage.removeItem("user");
+    currentUser = "";
     location.reload();
 }
 
@@ -467,11 +486,12 @@ async function generate() {
         return;
     }
 
-    const subjects = document.getElementById("subjects").value.split(",");
+    const rawSubjects = document.getElementById("subjects").value;
+    const subjects = rawSubjects.split(",").map(s => s.trim()).filter(Boolean);
     const hours = Number(document.getElementById("hours").value);
 
-    if (!subjects.length || !hours) {
-        alert("Enter valid inputs");
+    if (!subjects.length || !hours || hours <= 0) {
+        alert("Enter valid subjects and hours");
         return;
     }
 
@@ -500,7 +520,9 @@ async function load() {
     if (!currentUser) return;
 
     try {
-        const data = await safeFetch(`${BASE_URL}/data?user=${encodeURIComponent(currentUser)}`);
+        const data = await safeFetch(
+            `${BASE_URL}/data?user=${encodeURIComponent(currentUser)}`
+        );
 
         const schedule = Array.isArray(data.schedule) ? data.schedule : [];
 
@@ -571,10 +593,14 @@ function renderCalendar(data) {
 ========================= */
 async function update(di, ti, field, val) {
     try {
-        const data = await safeFetch(`${BASE_URL}/data?user=${encodeURIComponent(currentUser)}`);
-        const schedule = data.schedule || [];
+        const data = await safeFetch(
+            `${BASE_URL}/data?user=${encodeURIComponent(currentUser)}`
+        );
+        const schedule = Array.isArray(data.schedule) ? data.schedule : [];
 
-        if (!schedule[di] || !schedule[di].tasks || !schedule[di].tasks[ti]) return;
+        if (!schedule[di] || !schedule[di].tasks || !schedule[di].tasks[ti]) {
+            return;
+        }
 
         schedule[di].tasks[ti][field] = Number(val) || 0;
 
@@ -650,7 +676,9 @@ async function getAI() {
     btn.disabled = true;
 
     try {
-        const data = await safeFetch(`${BASE_URL}/data?user=${encodeURIComponent(currentUser)}`);
+        const data = await safeFetch(
+            `${BASE_URL}/data?user=${encodeURIComponent(currentUser)}`
+        );
 
         const r = await safeFetch(`${BASE_URL}/ai`, {
             method: "POST",
@@ -666,8 +694,10 @@ async function getAI() {
                 .filter(line => line.trim() !== "")
                 .map(line => `<div class="ai-card">${line}</div>`)
                 .join("") || `<p class="empty-ai">No insights yet</p>`;
-    } catch {
-        document.getElementById("aiBox").innerText = "⚠️ Failed to load AI insights";
+    } catch (err) {
+        document.getElementById("aiBox").innerText =
+            "⚠️ Failed to load AI insights";
+        console.error(err);
     }
 
     btn.innerText = "Generate Insights";
@@ -738,8 +768,10 @@ function stopTimer() {
 ========================= */
 async function addTime(sub) {
     try {
-        const data = await safeFetch(`${BASE_URL}/data?user=${encodeURIComponent(currentUser)}`);
-        const schedule = data.schedule || [];
+        const data = await safeFetch(
+            `${BASE_URL}/data?user=${encodeURIComponent(currentUser)}`
+        );
+        const schedule = Array.isArray(data.schedule) ? data.schedule : [];
 
         schedule.forEach(d => {
             d.tasks.forEach(t => {
@@ -789,5 +821,7 @@ function fillSubjects(data) {
    AUTO LOGIN
 ========================= */
 window.onload = () => {
-    if (currentUser) showApp();
+    if (currentUser) {
+        showApp();
+    }
 };

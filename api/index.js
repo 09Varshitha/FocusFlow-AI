@@ -274,20 +274,19 @@ function writeData(data) {
   }
 }
 
-app.get("/api/test", (req, res) => {
+app.get("/test", (req, res) => {
   res.json({ status: "Server running ✅" });
 });
 
-app.post("/api/register", (req, res) => {
+app.post("/register", (req, res) => {
   try {
-    const email = req.body.email;
-    const password = req.body.password;
+    const { email, password } = req.body;
 
     if (!email || !password) {
       return res.json({ error: "Email and password required" });
     }
 
-    let data = readData();
+    const data = readData();
     if (!data.users) data.users = {};
 
     if (data.users[email]) {
@@ -307,12 +306,10 @@ app.post("/api/register", (req, res) => {
   }
 });
 
-app.post("/api/login", (req, res) => {
+app.post("/login", (req, res) => {
   try {
-    const email = req.body.email;
-    const password = req.body.password;
-
-    let data = readData();
+    const { email, password } = req.body;
+    const data = readData();
 
     if (!data.users[email]) {
       return res.json({ error: "User not found" });
@@ -349,11 +346,10 @@ function generateSchedule(subjects, hours) {
   }));
 }
 
-app.post("/api/generate", (req, res) => {
+app.post("/generate", (req, res) => {
   try {
     const { subjects, hours, user } = req.body;
-
-    let data = readData();
+    const data = readData();
 
     if (!data.users[user]) {
       return res.json({ error: "User not found" });
@@ -369,10 +365,10 @@ app.post("/api/generate", (req, res) => {
   }
 });
 
-app.get("/api/data", (req, res) => {
+app.get("/data", (req, res) => {
   try {
     const user = req.query.user;
-    let data = readData();
+    const data = readData();
 
     return res.json({
       schedule: data.users[user]?.schedule || []
@@ -383,11 +379,10 @@ app.get("/api/data", (req, res) => {
   }
 });
 
-app.post("/api/save", (req, res) => {
+app.post("/save", (req, res) => {
   try {
     const { user, schedule } = req.body;
-
-    let data = readData();
+    const data = readData();
 
     if (!data.users[user]) {
       return res.json({ error: "User not found" });
@@ -403,7 +398,7 @@ app.post("/api/save", (req, res) => {
   }
 });
 
-app.post("/api/ai", (req, res) => {
+app.post("/ai", (req, res) => {
   try {
     res.json({ text: "AI working successfully 🚀" });
   } catch (err) {
