@@ -226,7 +226,6 @@
 
 
 
-
 require("dotenv").config();
 
 const express = require("express");
@@ -236,384 +235,181 @@ const path = require("path");
 
 const app = express();
 
-/* =========================
-   MIDDLEWARE
-========================= */
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-/* =========================
-   CORS
-========================= */
-
-app.use(cors({
-  origin: true,
-  credentials: true
-}));
-
-/* =========================
-   FILE LOCATION
-========================= */
+app.use(cors({ origin: true, credentials: true }));
 
 const FILE = process.env.VERCEL
   ? "/tmp/data.json"
   : path.join(__dirname, "..", "data.json");
 
-/* =========================
-   ENSURE FILE EXISTS
-========================= */
-
 function ensureFile() {
   try {
-
     if (!fs.existsSync(FILE)) {
-
-      fs.writeFileSync(
-        FILE,
-        JSON.stringify({ users: {} }, null, 2)
-      );
-
+      fs.writeFileSync(FILE, JSON.stringify({ users: {} }, null, 2));
     }
-
   } catch (err) {
-
     console.error("FILE ERROR:", err);
-
   }
 }
-
-/* =========================
-   READ DATA
-========================= */
 
 function readData() {
-
   try {
-
     ensureFile();
-
-    const raw = fs.readFileSync(
-      FILE,
-      "utf-8"
-    );
-
-    if (!raw)
-      return { users: {} };
-
+    const raw = fs.readFileSync(FILE, "utf-8");
+    if (!raw) return { users: {} };
     return JSON.parse(raw);
-
   } catch (err) {
-
     console.error("READ ERROR:", err);
-
     return { users: {} };
-
   }
-
 }
-
-/* =========================
-   WRITE DATA
-========================= */
 
 function writeData(data) {
-
   try {
-
     ensureFile();
-
-    fs.writeFileSync(
-      FILE,
-      JSON.stringify(data, null, 2)
-    );
-
+    fs.writeFileSync(FILE, JSON.stringify(data, null, 2));
   } catch (err) {
-
     console.error("WRITE ERROR:", err);
-
   }
-
 }
 
-/* =========================
-   TEST ROUTE
-========================= */
-
-app.get("/test", (req, res) => {
-  res.json({
-    status: "Server running ✅"
-  });
+app.get("/api/test", (req, res) => {
+  res.json({ status: "Server running ✅" });
 });
 
-/* =========================
-   REGISTER
-========================= */
-
-app.post("/register", (req, res) => {
-
+app.post("/api/register", (req, res) => {
   try {
-
     const email = req.body.email;
     const password = req.body.password;
 
     if (!email || !password) {
-
-      return res.json({
-        error: "Email and password required"
-      });
-
+      return res.json({ error: "Email and password required" });
     }
 
     let data = readData();
-
-    if (!data.users)
-      data.users = {};
+    if (!data.users) data.users = {};
 
     if (data.users[email]) {
-
-      return res.json({
-        error: "User already exists"
-      });
-
+      return res.json({ error: "User already exists" });
     }
 
     data.users[email] = {
-      password: password,
+      password,
       schedule: []
     };
 
     writeData(data);
-
-    return res.json({
-      ok: true
-    });
-
+    return res.json({ ok: true });
   } catch (err) {
-
     console.error("REGISTER ERROR:", err);
-
-    return res.json({
-      error: "Registration failed"
-    });
-
+    return res.json({ error: "Registration failed" });
   }
-
 });
 
-/* =========================
-   LOGIN
-========================= */
-
-app.post("/login", (req, res) => {
-
+app.post("/api/login", (req, res) => {
   try {
-
     const email = req.body.email;
     const password = req.body.password;
 
     let data = readData();
 
     if (!data.users[email]) {
-
-      return res.json({
-        error: "User not found"
-      });
-
+      return res.json({ error: "User not found" });
     }
 
-    if (
-      data.users[email].password !== password
-    ) {
-
-      return res.json({
-        error: "Wrong password"
-      });
-
+    if (data.users[email].password !== password) {
+      return res.json({ error: "Wrong password" });
     }
 
-    return res.json({
-      ok: true
-    });
-
+    return res.json({ ok: true });
   } catch (err) {
-
     console.error("LOGIN ERROR:", err);
-
-    return res.json({
-      error: "Login failed"
-    });
-
+    return res.json({ error: "Login failed" });
   }
-
 });
 
-/* =========================
-   GENERATE SCHEDULE
-========================= */
-
 function generateSchedule(subjects, hours) {
+  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-  const days = [
-    "Mon",
-    "Tue",
-    "Wed",
-    "Thu",
-    "Fri",
-    "Sat",
-    "Sun"
-  ];
-
-  subjects = subjects
-    .map(s => s.trim())
-    .filter(Boolean);
+  subjects = subjects.map(s => s.trim()).filter(Boolean);
 
   const perSubjectTime =
-    subjects.length > 0
-      ? Math.floor(hours / subjects.length)
-      : 0;
+    subjects.length > 0 ? Math.floor(hours / subjects.length) : 0;
 
   return days.map(day => ({
-
     day,
-
     tasks: subjects.map(sub => ({
-
       subject: sub,
       concepts: 0,
       problems: 0,
       plannedTime: perSubjectTime,
       actualTime: 0
-
     }))
-
   }));
-
 }
 
-/* =========================
-   GENERATE
-========================= */
-
-app.post("/generate", (req, res) => {
-
+app.post("/api/generate", (req, res) => {
   try {
-
-    const {
-      subjects,
-      hours,
-      user
-    } = req.body;
+    const { subjects, hours, user } = req.body;
 
     let data = readData();
 
     if (!data.users[user]) {
-
-      return res.json({
-        error: "User not found"
-      });
-
+      return res.json({ error: "User not found" });
     }
 
-    data.users[user].schedule =
-      generateSchedule(
-        subjects,
-        hours
-      );
-
+    data.users[user].schedule = generateSchedule(subjects, hours);
     writeData(data);
 
-    return res.json({
-      ok: true
-    });
-
+    return res.json({ ok: true });
   } catch (err) {
-
     console.error("GENERATE ERROR:", err);
-
-    return res.json({
-      error: "Generate failed"
-    });
-
+    return res.json({ error: "Generate failed" });
   }
-
 });
 
-/* =========================
-   GET DATA
-========================= */
-
-app.get("/data", (req, res) => {
-
+app.get("/api/data", (req, res) => {
   try {
-
     const user = req.query.user;
-
     let data = readData();
 
     return res.json({
-      schedule:
-        data.users[user]?.schedule || []
+      schedule: data.users[user]?.schedule || []
     });
-
   } catch (err) {
-
     console.error("DATA ERROR:", err);
-
-    return res.json({
-      schedule: []
-    });
-
+    return res.json({ schedule: [] });
   }
-
 });
 
-/* =========================
-   SAVE
-========================= */
-
-app.post("/save", (req, res) => {
-
+app.post("/api/save", (req, res) => {
   try {
-
-    const {
-      user,
-      schedule
-    } = req.body;
+    const { user, schedule } = req.body;
 
     let data = readData();
 
     if (!data.users[user]) {
-
-      return res.json({
-        error: "User not found"
-      });
-
+      return res.json({ error: "User not found" });
     }
 
-    data.users[user].schedule =
-      schedule;
-
+    data.users[user].schedule = schedule;
     writeData(data);
 
-    return res.json({
-      ok: true
-    });
-
+    return res.json({ ok: true });
   } catch (err) {
-
     console.error("SAVE ERROR:", err);
-
-    return res.json({
-      error: "Save failed"
-    });
-
+    return res.json({ error: "Save failed" });
   }
-
 });
 
-/* =========================
-   EXPORT
-========================= */
+app.post("/api/ai", (req, res) => {
+  try {
+    res.json({ text: "AI working successfully 🚀" });
+  } catch (err) {
+    console.error("AI ERROR:", err);
+    res.json({ text: "AI failed" });
+  }
+});
 
-export default app;
+module.exports = app;
