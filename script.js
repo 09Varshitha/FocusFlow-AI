@@ -3,7 +3,7 @@ let chart;
 let aiText = "";
 let currentUser = localStorage.getItem("user") || "";
 // const BASE_URL = "https://focusflow-ai-m8rj.onrender.com";
-const BASE_URL = window.location.origin;
+const BASE_URL = window.location.origin + "/api";
 
 /* =========================
    🔐 AUTH

@@ -233,7 +233,6 @@ const express = require("express");
 const fs = require("fs");
 const cors = require("cors");
 const path = require("path");
-const OpenAI = require("openai");
 
 const app = express();
 
@@ -244,21 +243,7 @@ const app = express();
 app.use(express.json());
 
 /* =========================
-   STATIC FILES
-========================= */
-
-// Serve static files
-app.use(express.static(path.join(__dirname, "..")));
-
-// ✅ FIX: Root route for Vercel
-app.get("/", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "..", "index.html")
-  );
-});
-
-/* =========================
-   CORS CONFIG
+   CORS FIRST (IMPORTANT)
 ========================= */
 
 const allowedOrigins = [
@@ -269,18 +254,14 @@ const allowedOrigins = [
 app.use(cors({
   origin: function (origin, callback) {
 
-    // allow Postman / curl
     if (!origin) return callback(null, true);
 
-    // ✅ allow all Vercel deployments
     if (origin.includes("vercel.app"))
       return callback(null, true);
 
     if (!allowedOrigins.includes(origin)) {
       return callback(
-        new Error(
-          "CORS policy does not allow this Origin."
-        ),
+        new Error("CORS policy does not allow this Origin."),
         false
       );
     }
@@ -288,66 +269,112 @@ app.use(cors({
     return callback(null, true);
   },
 
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type"],
-  credentials: true
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type"]
 }));
 
 /* =========================
-   OPENAI
+   STATIC FILES
 ========================= */
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+app.use(
+  express.static(
+    path.join(__dirname, "..")
+  )
+);
+
+/* ROOT ROUTE */
+
+app.get("/", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "..", "index.html")
+  );
 });
 
 /* =========================
-   DATA FILE (Serverless Safe)
+   DATA FILE (SERVERLESS SAFE)
 ========================= */
 
 const FILE = process.env.VERCEL
   ? "/tmp/data.json"
   : path.join(__dirname, "..", "data.json");
 
+/* CREATE FILE IF NOT EXISTS */
+
 function ensureFile() {
+
   try {
+
     if (!fs.existsSync(FILE)) {
+
       fs.writeFileSync(
         FILE,
         JSON.stringify({ users: {} }, null, 2)
       );
+
     }
+
   } catch (err) {
+
     console.error("FILE INIT ERROR:", err);
+
   }
+
 }
 
 ensureFile();
 
-/* =========================
-   FILE HELPERS
-========================= */
+/* SAFE READ */
 
 function readData() {
 
-  let data = JSON.parse(
-    fs.readFileSync(FILE, "utf-8")
-  );
+  try {
 
-  if (!data.users) {
-    data = { users: {} };
-    writeData(data);
+    if (!fs.existsSync(FILE)) {
+
+      return { users: {} };
+
+    }
+
+    let raw = fs.readFileSync(
+      FILE,
+      "utf-8"
+    );
+
+    if (!raw) {
+
+      return { users: {} };
+
+    }
+
+    return JSON.parse(raw);
+
+  } catch (err) {
+
+    console.error("READ ERROR:", err);
+
+    return { users: {} };
+
   }
 
-  return data;
 }
+
+/* SAFE WRITE */
 
 function writeData(data) {
 
-  fs.writeFileSync(
-    FILE,
-    JSON.stringify(data, null, 2)
-  );
+  try {
+
+    fs.writeFileSync(
+      FILE,
+      JSON.stringify(data, null, 2)
+    );
+
+  } catch (err) {
+
+    console.error("WRITE ERROR:", err);
+
+  }
 
 }
 
@@ -384,10 +411,7 @@ app.post("/register", (req, res) => {
 
   } catch (err) {
 
-    console.error(
-      "REGISTER ERROR:",
-      err
-    );
+    console.error("REGISTER ERROR:", err);
 
     res.json({
       error: "Register failed"
@@ -411,8 +435,7 @@ app.post("/login", (req, res) => {
       });
 
     if (
-      data.users[email].password !==
-      password
+      data.users[email].password !== password
     )
       return res.json({
         error: "Wrong password"
@@ -422,10 +445,7 @@ app.post("/login", (req, res) => {
 
   } catch (err) {
 
-    console.error(
-      "LOGIN ERROR:",
-      err
-    );
+    console.error("LOGIN ERROR:", err);
 
     res.json({
       error: "Login failed"
@@ -466,14 +486,19 @@ function generateSchedule(
       : 0;
 
   return days.map(day => ({
+
     day,
+
     tasks: subjects.map(sub => ({
+
       subject: sub,
       concepts: 0,
       problems: 0,
       plannedTime: perSubjectTime,
       actualTime: 0
+
     }))
+
   }));
 
 }
@@ -537,14 +562,9 @@ app.get("/data", (req, res) => {
 
     let data = readData();
 
-    if (!data.users[user])
-      return res.json({
-        schedule: []
-      });
-
     res.json({
       schedule:
-        data.users[user].schedule
+        data.users[user]?.schedule || []
     });
 
   } catch (err) {
@@ -608,79 +628,14 @@ app.post("/save", (req, res) => {
    AI ROUTE
 ========================= */
 
-app.post("/ai", async (req, res) => {
+app.post("/ai", (req, res) => {
 
   try {
 
-    const { schedule } =
-      req.body;
-
-    let totalConcepts = 0;
-    let totalProblems = 0;
-    let totalTime = 0;
-
-    let subjectMap = {};
-
-    schedule.forEach(day => {
-
-      day.tasks.forEach(task => {
-
-        totalConcepts +=
-          task.concepts || 0;
-
-        totalProblems +=
-          task.problems || 0;
-
-        totalTime +=
-          task.actualTime || 0;
-
-        let total =
-          (task.concepts || 0) +
-          (task.problems || 0) +
-          (task.actualTime || 0);
-
-        subjectMap[task.subject] =
-          (subjectMap[
-            task.subject
-          ] || 0) + total;
-
-      });
-
+    res.json({
+      text:
+        "AI working successfully 🚀"
     });
-
-    let weak =
-      Object.entries(
-        subjectMap
-      ).sort(
-        (a, b) => a[1] - b[1]
-      )[0]?.[0] || "None";
-
-    let strong =
-      Object.entries(
-        subjectMap
-      ).sort(
-        (a, b) => b[1] - a[1]
-      )[0]?.[0] || "None";
-
-    let text = `
-📊 Performance:
-• Concepts: ${totalConcepts}
-• Problems: ${totalProblems}
-• Time Spent: ${totalTime} hrs
-
-📉 Weak Subject: ${weak}
-📈 Strong Subject: ${strong}
-
-💡 Suggestions:
-• Focus more on ${weak}
-• Practice daily
-• Track time consistently
-
-🔥 Motivation:
-Consistency beats intensity 🚀
-`;
-
-    res.json({ text });
 
   } catch (err) {
 
@@ -691,7 +646,7 @@ Consistency beats intensity 🚀
 
     res.json({
       text:
-        "AI failed, try again!"
+        "AI failed"
     });
 
   }
