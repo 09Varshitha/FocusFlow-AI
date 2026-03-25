@@ -226,6 +226,7 @@
 
 
 
+
 require("dotenv").config();
 
 const express = require("express");
@@ -242,8 +243,19 @@ const app = express();
 
 app.use(express.json());
 
-// Serve static files (index.html, style.css, script.js)
+/* =========================
+   STATIC FILES
+========================= */
+
+// Serve static files
 app.use(express.static(path.join(__dirname, "..")));
+
+// ✅ FIX: Root route for Vercel
+app.get("/", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "..", "index.html")
+  );
+});
 
 /* =========================
    CORS CONFIG
@@ -251,20 +263,26 @@ app.use(express.static(path.join(__dirname, "..")));
 
 const allowedOrigins = [
   "http://localhost:3000",
-  "http://localhost:5173",
-  "https://your-project.vercel.app" // replace after deploy
+  "http://localhost:5173"
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
 
-    // allow Postman / curl / server-to-server
+    // allow Postman / curl
     if (!origin) return callback(null, true);
 
+    // ✅ allow all Vercel deployments
+    if (origin.includes("vercel.app"))
+      return callback(null, true);
+
     if (!allowedOrigins.includes(origin)) {
-      const msg =
-        "The CORS policy for this site does not allow access from this Origin.";
-      return callback(new Error(msg), false);
+      return callback(
+        new Error(
+          "CORS policy does not allow this Origin."
+        ),
+        false
+      );
     }
 
     return callback(null, true);
@@ -276,7 +294,7 @@ app.use(cors({
 }));
 
 /* =========================
-   OPENAI (optional)
+   OPENAI
 ========================= */
 
 const openai = new OpenAI({
@@ -289,8 +307,16 @@ const openai = new OpenAI({
 
 const FILE = path.join(__dirname, "..", "data.json");
 
-if (!fs.existsSync(FILE)) {
-  fs.writeFileSync(FILE, JSON.stringify({ users: {} }, null, 2));
+// ✅ SAFE initialization
+try {
+  if (!fs.existsSync(FILE)) {
+    fs.writeFileSync(
+      FILE,
+      JSON.stringify({ users: {} }, null, 2)
+    );
+  }
+} catch (err) {
+  console.error("FILE INIT ERROR:", err);
 }
 
 /* =========================
@@ -298,7 +324,10 @@ if (!fs.existsSync(FILE)) {
 ========================= */
 
 function readData() {
-  let data = JSON.parse(fs.readFileSync(FILE, "utf-8"));
+
+  let data = JSON.parse(
+    fs.readFileSync(FILE, "utf-8")
+  );
 
   if (!data.users) {
     data = { users: {} };
@@ -309,7 +338,12 @@ function readData() {
 }
 
 function writeData(data) {
-  fs.writeFileSync(FILE, JSON.stringify(data, null, 2));
+
+  fs.writeFileSync(
+    FILE,
+    JSON.stringify(data, null, 2)
+  );
+
 }
 
 /* =========================
@@ -317,16 +351,22 @@ function writeData(data) {
 ========================= */
 
 app.post("/register", (req, res) => {
+
   try {
+
     const { email, password } = req.body;
 
     if (!email || !password)
-      return res.json({ error: "Missing fields" });
+      return res.json({
+        error: "Missing fields"
+      });
 
     let data = readData();
 
     if (data.users[email])
-      return res.json({ error: "User already exists" });
+      return res.json({
+        error: "User already exists"
+      });
 
     data.users[email] = {
       password,
@@ -338,36 +378,66 @@ app.post("/register", (req, res) => {
     res.json({ ok: true });
 
   } catch (err) {
-    console.error("REGISTER ERROR:", err);
-    res.json({ error: "Register failed" });
+
+    console.error(
+      "REGISTER ERROR:",
+      err
+    );
+
+    res.json({
+      error: "Register failed"
+    });
+
   }
+
 });
 
 app.post("/login", (req, res) => {
+
   try {
+
     const { email, password } = req.body;
 
     let data = readData();
 
     if (!data.users[email])
-      return res.json({ error: "User not found" });
+      return res.json({
+        error: "User not found"
+      });
 
-    if (data.users[email].password !== password)
-      return res.json({ error: "Wrong password" });
+    if (
+      data.users[email].password !==
+      password
+    )
+      return res.json({
+        error: "Wrong password"
+      });
 
     res.json({ ok: true });
 
   } catch (err) {
-    console.error("LOGIN ERROR:", err);
-    res.json({ error: "Login failed" });
+
+    console.error(
+      "LOGIN ERROR:",
+      err
+    );
+
+    res.json({
+      error: "Login failed"
+    });
+
   }
+
 });
 
 /* =========================
    SCHEDULE
 ========================= */
 
-function generateSchedule(subjects, hours) {
+function generateSchedule(
+  subjects,
+  hours
+) {
 
   const days = [
     "Mon",
@@ -385,7 +455,9 @@ function generateSchedule(subjects, hours) {
 
   let perSubjectTime =
     subjects.length > 0
-      ? Math.floor(hours / subjects.length)
+      ? Math.floor(
+          hours / subjects.length
+        )
       : 0;
 
   return days.map(day => ({
@@ -398,6 +470,7 @@ function generateSchedule(subjects, hours) {
       actualTime: 0
     }))
   }));
+
 }
 
 /* =========================
@@ -405,28 +478,46 @@ function generateSchedule(subjects, hours) {
 ========================= */
 
 app.post("/generate", (req, res) => {
+
   try {
 
-    const { subjects, hours, user } = req.body;
+    const {
+      subjects,
+      hours,
+      user
+    } = req.body;
 
     let data = readData();
 
     if (!data.users[user])
-      return res.json({ error: "User not found" });
+      return res.json({
+        error: "User not found"
+      });
 
     data.users[user].schedule =
-      generateSchedule(subjects, hours);
+      generateSchedule(
+        subjects,
+        hours
+      );
 
     writeData(data);
 
     res.json({ ok: true });
 
   } catch (err) {
-    console.error("GENERATE ERROR:", err);
+
+    console.error(
+      "GENERATE ERROR:",
+      err
+    );
+
     res.json({
-      error: "Failed to generate schedule"
+      error:
+        "Failed to generate schedule"
     });
+
   }
+
 });
 
 /* =========================
@@ -434,6 +525,7 @@ app.post("/generate", (req, res) => {
 ========================= */
 
 app.get("/data", (req, res) => {
+
   try {
 
     const user = req.query.user;
@@ -441,16 +533,28 @@ app.get("/data", (req, res) => {
     let data = readData();
 
     if (!data.users[user])
-      return res.json({ schedule: [] });
+      return res.json({
+        schedule: []
+      });
 
     res.json({
-      schedule: data.users[user].schedule
+      schedule:
+        data.users[user].schedule
     });
 
   } catch (err) {
-    console.error("DATA ERROR:", err);
-    res.json({ schedule: [] });
+
+    console.error(
+      "DATA ERROR:",
+      err
+    );
+
+    res.json({
+      schedule: []
+    });
+
   }
+
 });
 
 /* =========================
@@ -458,25 +562,41 @@ app.get("/data", (req, res) => {
 ========================= */
 
 app.post("/save", (req, res) => {
+
   try {
 
-    const { user, schedule } = req.body;
+    const {
+      user,
+      schedule
+    } = req.body;
 
     let data = readData();
 
     if (!data.users[user])
-      return res.json({ error: "User not found" });
+      return res.json({
+        error: "User not found"
+      });
 
-    data.users[user].schedule = schedule;
+    data.users[user].schedule =
+      schedule;
 
     writeData(data);
 
     res.json({ ok: true });
 
   } catch (err) {
-    console.error("SAVE ERROR:", err);
-    res.json({ error: "Save failed" });
+
+    console.error(
+      "SAVE ERROR:",
+      err
+    );
+
+    res.json({
+      error: "Save failed"
+    });
+
   }
+
 });
 
 /* =========================
@@ -484,9 +604,11 @@ app.post("/save", (req, res) => {
 ========================= */
 
 app.post("/ai", async (req, res) => {
+
   try {
 
-    const { schedule } = req.body;
+    const { schedule } =
+      req.body;
 
     let totalConcepts = 0;
     let totalProblems = 0;
@@ -495,11 +617,17 @@ app.post("/ai", async (req, res) => {
     let subjectMap = {};
 
     schedule.forEach(day => {
+
       day.tasks.forEach(task => {
 
-        totalConcepts += task.concepts || 0;
-        totalProblems += task.problems || 0;
-        totalTime += task.actualTime || 0;
+        totalConcepts +=
+          task.concepts || 0;
+
+        totalProblems +=
+          task.problems || 0;
+
+        totalTime +=
+          task.actualTime || 0;
 
         let total =
           (task.concepts || 0) +
@@ -507,20 +635,27 @@ app.post("/ai", async (req, res) => {
           (task.actualTime || 0);
 
         subjectMap[task.subject] =
-          (subjectMap[task.subject] || 0) + total;
+          (subjectMap[
+            task.subject
+          ] || 0) + total;
 
       });
+
     });
 
     let weak =
-      Object.entries(subjectMap)
-        .sort((a, b) => a[1] - b[1])[0]?.[0]
-      || "None";
+      Object.entries(
+        subjectMap
+      ).sort(
+        (a, b) => a[1] - b[1]
+      )[0]?.[0] || "None";
 
     let strong =
-      Object.entries(subjectMap)
-        .sort((a, b) => b[1] - a[1])[0]?.[0]
-      || "None";
+      Object.entries(
+        subjectMap
+      ).sort(
+        (a, b) => b[1] - a[1]
+      )[0]?.[0] || "None";
 
     let text = `
 📊 Performance:
@@ -543,12 +678,19 @@ Consistency beats intensity 🚀
     res.json({ text });
 
   } catch (err) {
-    console.error("AI ERROR:", err);
+
+    console.error(
+      "AI ERROR:",
+      err
+    );
 
     res.json({
-      text: "AI failed, try again!"
+      text:
+        "AI failed, try again!"
     });
+
   }
+
 });
 
 /* =========================
