@@ -375,42 +375,37 @@
 // };
 
 
-
-
-// For Vercel deployment with API routes
-const BASE_URL = window.location.origin + "/api";
 let chart;
 let aiText = "";
 let currentUser = localStorage.getItem("user") || "";
 
-
-
 /* =========================
-   SAFE FETCH HELPER
+   STORAGE HELPERS
 ========================= */
-async function safeFetch(url, options = {}) {
-    const res = await fetch(url, options);
-    const text = await res.text();
+function getUsers() {
+    return JSON.parse(localStorage.getItem("users") || "{}");
+}
 
-    let data;
-    try {
-        data = text ? JSON.parse(text) : {};
-    } catch {
-        console.error("Server returned non-JSON:", text);
-        throw new Error(`Server error (${res.status})`);
-    }
+function saveUsers(users) {
+    localStorage.setItem("users", JSON.stringify(users));
+}
 
-    if (!res.ok) {
-        throw new Error(data.error || `Request failed (${res.status})`);
-    }
+function getCurrentSchedule() {
+    const users = getUsers();
+    return users[currentUser]?.schedule || [];
+}
 
-    return data;
+function saveCurrentSchedule(schedule) {
+    const users = getUsers();
+    if (!users[currentUser]) return;
+    users[currentUser].schedule = schedule;
+    saveUsers(users);
 }
 
 /* =========================
    AUTH
 ========================= */
-async function login() {
+function login() {
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value.trim();
 
@@ -419,27 +414,24 @@ async function login() {
         return;
     }
 
-    try {
-        const data = await safeFetch(`${BASE_URL}/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password })
-        });
+    const users = getUsers();
 
-        if (data.error) {
-            alert(data.error);
-            return;
-        }
-
-        localStorage.setItem("user", email);
-        currentUser = email;
-        showApp();
-    } catch (err) {
-        alert("Login failed: " + err.message);
+    if (!users[email]) {
+        alert("User not found");
+        return;
     }
+
+    if (users[email].password !== password) {
+        alert("Wrong password");
+        return;
+    }
+
+    localStorage.setItem("user", email);
+    currentUser = email;
+    showApp();
 }
 
-async function register() {
+function register() {
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value.trim();
 
@@ -448,22 +440,20 @@ async function register() {
         return;
     }
 
-    try {
-        const data = await safeFetch(`${BASE_URL}/register`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password })
-        });
+    const users = getUsers();
 
-        if (data.error) {
-            alert(data.error);
-            return;
-        }
-
-        alert("Registered successfully!");
-    } catch (err) {
-        alert("Registration failed: " + err.message);
+    if (users[email]) {
+        alert("User already exists");
+        return;
     }
+
+    users[email] = {
+        password,
+        schedule: []
+    };
+
+    saveUsers(users);
+    alert("Registered successfully!");
 }
 
 function logout() {
@@ -479,16 +469,40 @@ function showApp() {
 }
 
 /* =========================
+   SCHEDULE GENERATION
+========================= */
+function generateSchedule(subjects, hours) {
+    const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const cleanSubjects = subjects.map(s => s.trim()).filter(Boolean);
+    const perSubjectTime =
+        cleanSubjects.length > 0 ? Math.floor(hours / cleanSubjects.length) : 0;
+
+    return days.map(day => ({
+        day,
+        tasks: cleanSubjects.map(sub => ({
+            subject: sub,
+            concepts: 0,
+            problems: 0,
+            plannedTime: perSubjectTime,
+            actualTime: 0
+        }))
+    }));
+}
+
+/* =========================
    GENERATE
 ========================= */
-async function generate() {
+function generate() {
     if (!currentUser) {
         alert("Login first");
         return;
     }
 
-    const rawSubjects = document.getElementById("subjects").value;
-    const subjects = rawSubjects.split(",").map(s => s.trim()).filter(Boolean);
+    const subjects = document.getElementById("subjects").value
+        .split(",")
+        .map(s => s.trim())
+        .filter(Boolean);
+
     const hours = Number(document.getElementById("hours").value);
 
     if (!subjects.length || !hours || hours <= 0) {
@@ -496,43 +510,22 @@ async function generate() {
         return;
     }
 
-    try {
-        const data = await safeFetch(`${BASE_URL}/generate`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ subjects, hours, user: currentUser })
-        });
-
-        if (data.error) {
-            alert(data.error);
-            return;
-        }
-
-        load();
-    } catch (err) {
-        alert("Generate failed: " + err.message);
-    }
+    const schedule = generateSchedule(subjects, hours);
+    saveCurrentSchedule(schedule);
+    load();
 }
 
 /* =========================
    LOAD DATA
 ========================= */
-async function load() {
+function load() {
     if (!currentUser) return;
 
-    try {
-        const data = await safeFetch(
-            `${BASE_URL}/data?user=${encodeURIComponent(currentUser)}`
-        );
+    const schedule = getCurrentSchedule();
 
-        const schedule = Array.isArray(data.schedule) ? data.schedule : [];
-
-        renderCalendar(schedule);
-        renderChart(schedule);
-        fillSubjects(schedule);
-    } catch (err) {
-        alert("Failed to load data: " + err.message);
-    }
+    renderCalendar(schedule);
+    renderChart(schedule);
+    fillSubjects(schedule);
 }
 
 /* =========================
@@ -592,34 +585,14 @@ function renderCalendar(data) {
 /* =========================
    UPDATE
 ========================= */
-async function update(di, ti, field, val) {
-    try {
-        const data = await safeFetch(
-            `${BASE_URL}/data?user=${encodeURIComponent(currentUser)}`
-        );
-        const schedule = Array.isArray(data.schedule) ? data.schedule : [];
+function update(di, ti, field, val) {
+    const schedule = getCurrentSchedule();
 
-        if (!schedule[di] || !schedule[di].tasks || !schedule[di].tasks[ti]) {
-            return;
-        }
+    if (!schedule[di] || !schedule[di].tasks || !schedule[di].tasks[ti]) return;
 
-        schedule[di].tasks[ti][field] = Number(val) || 0;
-
-        const saveRes = await safeFetch(`${BASE_URL}/save`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ user: currentUser, schedule })
-        });
-
-        if (saveRes.error) {
-            alert(saveRes.error);
-            return;
-        }
-
-        load();
-    } catch (err) {
-        alert("Update failed: " + err.message);
-    }
+    schedule[di].tasks[ti][field] = Number(val) || 0;
+    saveCurrentSchedule(schedule);
+    load();
 }
 
 /* =========================
@@ -671,34 +644,64 @@ function updateStats(concepts, problems) {
 /* =========================
    AI INSIGHTS
 ========================= */
-async function getAI() {
+function getAI() {
     const btn = document.getElementById("aiBtn");
     btn.innerText = "Generating...";
     btn.disabled = true;
 
     try {
-        const data = await safeFetch(
-            `${BASE_URL}/data?user=${encodeURIComponent(currentUser)}`
-        );
+        const schedule = getCurrentSchedule();
 
-        const r = await safeFetch(`${BASE_URL}/ai`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ schedule: data.schedule || [] })
+        let totalConcepts = 0;
+        let totalProblems = 0;
+        let totalTime = 0;
+        const subjectMap = {};
+
+        schedule.forEach(day => {
+            day.tasks.forEach(task => {
+                totalConcepts += task.concepts || 0;
+                totalProblems += task.problems || 0;
+                totalTime += task.actualTime || 0;
+
+                const total =
+                    (task.concepts || 0) +
+                    (task.problems || 0) +
+                    (task.actualTime || 0);
+
+                subjectMap[task.subject] = (subjectMap[task.subject] || 0) + total;
+            });
         });
 
-        aiText = r.text || "";
+        const weak =
+            Object.entries(subjectMap).sort((a, b) => a[1] - b[1])[0]?.[0] || "None";
+
+        const strong =
+            Object.entries(subjectMap).sort((a, b) => b[1] - a[1])[0]?.[0] || "None";
+
+        aiText = `📊 Performance:
+• Concepts: ${totalConcepts}
+• Problems: ${totalProblems}
+• Time Spent: ${totalTime} hrs
+
+📉 Weak Subject: ${weak}
+📈 Strong Subject: ${strong}
+
+💡 Suggestions:
+• Focus more on ${weak}
+• Practice daily
+• Track time consistently
+
+🔥 Motivation:
+Consistency beats intensity 🚀`;
 
         document.getElementById("aiBox").innerHTML =
             aiText
                 .split("\n")
                 .filter(line => line.trim() !== "")
                 .map(line => `<div class="ai-card">${line}</div>`)
-                .join("") || `<p class="empty-ai">No insights yet</p>`;
-    } catch (err) {
-        document.getElementById("aiBox").innerText =
-            "⚠️ Failed to load AI insights";
-        console.error(err);
+                .join("");
+    } catch {
+        document.getElementById("aiBox").innerText = "⚠️ Failed to load AI insights";
     }
 
     btn.innerText = "Generate Insights";
@@ -735,7 +738,6 @@ function startTimer() {
     }
 
     document.getElementById("startBtn")?.setAttribute("disabled", true);
-
     clearInterval(interval);
 
     interval = setInterval(() => {
@@ -767,36 +769,19 @@ function stopTimer() {
 /* =========================
    ADD TIME
 ========================= */
-async function addTime(sub) {
-    try {
-        const data = await safeFetch(
-            `${BASE_URL}/data?user=${encodeURIComponent(currentUser)}`
-        );
-        const schedule = Array.isArray(data.schedule) ? data.schedule : [];
+function addTime(sub) {
+    const schedule = getCurrentSchedule();
 
-        schedule.forEach(d => {
-            d.tasks.forEach(t => {
-                if (t.subject === sub) {
-                    t.actualTime = (t.actualTime || 0) + 0.5;
-                }
-            });
+    schedule.forEach(d => {
+        d.tasks.forEach(t => {
+            if (t.subject === sub) {
+                t.actualTime = (t.actualTime || 0) + 0.5;
+            }
         });
+    });
 
-        const saveRes = await safeFetch(`${BASE_URL}/save`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ user: currentUser, schedule })
-        });
-
-        if (saveRes.error) {
-            alert(saveRes.error);
-            return;
-        }
-
-        load();
-    } catch (err) {
-        alert("Failed to add time: " + err.message);
-    }
+    saveCurrentSchedule(schedule);
+    load();
 }
 
 /* =========================
