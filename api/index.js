@@ -241,56 +241,19 @@ const app = express();
 ========================= */
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 /* =========================
    CORS
 ========================= */
 
-const allowedOrigins = [
-  "http://localhost:3000",
-  "http://localhost:5173"
-];
-
 app.use(cors({
-  origin: function (origin, callback) {
-
-    if (!origin) return callback(null, true);
-
-    if (origin.includes("vercel.app"))
-      return callback(null, true);
-
-    if (!allowedOrigins.includes(origin)) {
-      return callback(
-        new Error("CORS policy does not allow this Origin."),
-        false
-      );
-    }
-
-    return callback(null, true);
-  },
-
-  methods: ["GET", "POST"],
-  allowedHeaders: ["Content-Type"]
+  origin: true,
+  credentials: true
 }));
 
 /* =========================
-   STATIC FILES
-========================= */
-
-app.use(
-  express.static(
-    path.join(__dirname, "..")
-  )
-);
-
-app.get("/", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "..", "index.html")
-  );
-});
-
-/* =========================
-   FILE LOCATION (SERVERLESS SAFE)
+   FILE LOCATION
 ========================= */
 
 const FILE = process.env.VERCEL
@@ -304,12 +267,6 @@ const FILE = process.env.VERCEL
 function ensureFile() {
   try {
 
-    const dir = path.dirname(FILE);
-
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-
     if (!fs.existsSync(FILE)) {
 
       fs.writeFileSync(
@@ -321,13 +278,13 @@ function ensureFile() {
 
   } catch (err) {
 
-    console.error("FILE INIT ERROR:", err);
+    console.error("FILE ERROR:", err);
 
   }
 }
 
 /* =========================
-   SAFE READ
+   READ DATA
 ========================= */
 
 function readData() {
@@ -336,14 +293,13 @@ function readData() {
 
     ensureFile();
 
-    let raw = fs.readFileSync(
+    const raw = fs.readFileSync(
       FILE,
       "utf-8"
     );
 
-    if (!raw) {
+    if (!raw)
       return { users: {} };
-    }
 
     return JSON.parse(raw);
 
@@ -358,7 +314,7 @@ function readData() {
 }
 
 /* =========================
-   SAFE WRITE
+   WRITE DATA
 ========================= */
 
 function writeData(data) {
@@ -381,6 +337,16 @@ function writeData(data) {
 }
 
 /* =========================
+   TEST ROUTE
+========================= */
+
+app.get("/test", (req, res) => {
+  res.json({
+    status: "Server running ✅"
+  });
+});
+
+/* =========================
    REGISTER
 ========================= */
 
@@ -388,35 +354,47 @@ app.post("/register", (req, res) => {
 
   try {
 
-    const { email, password } = req.body;
+    const email = req.body.email;
+    const password = req.body.password;
 
-    if (!email || !password)
+    if (!email || !password) {
+
       return res.json({
-        error: "Missing fields"
+        error: "Email and password required"
       });
+
+    }
 
     let data = readData();
 
-    if (data.users[email])
+    if (!data.users)
+      data.users = {};
+
+    if (data.users[email]) {
+
       return res.json({
         error: "User already exists"
       });
 
+    }
+
     data.users[email] = {
-      password,
+      password: password,
       schedule: []
     };
 
     writeData(data);
 
-    res.json({ ok: true });
+    return res.json({
+      ok: true
+    });
 
   } catch (err) {
 
     console.error("REGISTER ERROR:", err);
 
-    res.json({
-      error: "Register failed"
+    return res.json({
+      error: "Registration failed"
     });
 
   }
@@ -431,29 +409,38 @@ app.post("/login", (req, res) => {
 
   try {
 
-    const { email, password } = req.body;
+    const email = req.body.email;
+    const password = req.body.password;
 
     let data = readData();
 
-    if (!data.users[email])
+    if (!data.users[email]) {
+
       return res.json({
         error: "User not found"
       });
 
+    }
+
     if (
       data.users[email].password !== password
-    )
+    ) {
+
       return res.json({
         error: "Wrong password"
       });
 
-    res.json({ ok: true });
+    }
+
+    return res.json({
+      ok: true
+    });
 
   } catch (err) {
 
     console.error("LOGIN ERROR:", err);
 
-    res.json({
+    return res.json({
       error: "Login failed"
     });
 
@@ -465,10 +452,7 @@ app.post("/login", (req, res) => {
    GENERATE SCHEDULE
 ========================= */
 
-function generateSchedule(
-  subjects,
-  hours
-) {
+function generateSchedule(subjects, hours) {
 
   const days = [
     "Mon",
@@ -484,11 +468,9 @@ function generateSchedule(
     .map(s => s.trim())
     .filter(Boolean);
 
-  let perSubjectTime =
+  const perSubjectTime =
     subjects.length > 0
-      ? Math.floor(
-          hours / subjects.length
-        )
+      ? Math.floor(hours / subjects.length)
       : 0;
 
   return days.map(day => ({
@@ -525,10 +507,13 @@ app.post("/generate", (req, res) => {
 
     let data = readData();
 
-    if (!data.users[user])
+    if (!data.users[user]) {
+
       return res.json({
         error: "User not found"
       });
+
+    }
 
     data.users[user].schedule =
       generateSchedule(
@@ -538,18 +523,16 @@ app.post("/generate", (req, res) => {
 
     writeData(data);
 
-    res.json({ ok: true });
+    return res.json({
+      ok: true
+    });
 
   } catch (err) {
 
-    console.error(
-      "GENERATE ERROR:",
-      err
-    );
+    console.error("GENERATE ERROR:", err);
 
-    res.json({
-      error:
-        "Failed to generate schedule"
+    return res.json({
+      error: "Generate failed"
     });
 
   }
@@ -568,19 +551,16 @@ app.get("/data", (req, res) => {
 
     let data = readData();
 
-    res.json({
+    return res.json({
       schedule:
         data.users[user]?.schedule || []
     });
 
   } catch (err) {
 
-    console.error(
-      "DATA ERROR:",
-      err
-    );
+    console.error("DATA ERROR:", err);
 
-    res.json({
+    return res.json({
       schedule: []
     });
 
@@ -603,26 +583,28 @@ app.post("/save", (req, res) => {
 
     let data = readData();
 
-    if (!data.users[user])
+    if (!data.users[user]) {
+
       return res.json({
         error: "User not found"
       });
+
+    }
 
     data.users[user].schedule =
       schedule;
 
     writeData(data);
 
-    res.json({ ok: true });
+    return res.json({
+      ok: true
+    });
 
   } catch (err) {
 
-    console.error(
-      "SAVE ERROR:",
-      err
-    );
+    console.error("SAVE ERROR:", err);
 
-    res.json({
+    return res.json({
       error: "Save failed"
     });
 
@@ -631,36 +613,7 @@ app.post("/save", (req, res) => {
 });
 
 /* =========================
-   AI ROUTE
-========================= */
-
-app.post("/ai", (req, res) => {
-
-  try {
-
-    res.json({
-      text:
-        "AI working successfully 🚀"
-    });
-
-  } catch (err) {
-
-    console.error(
-      "AI ERROR:",
-      err
-    );
-
-    res.json({
-      text:
-        "AI failed"
-    });
-
-  }
-
-});
-
-/* =========================
-   EXPORT FOR VERCEL
+   EXPORT
 ========================= */
 
 module.exports = app;
