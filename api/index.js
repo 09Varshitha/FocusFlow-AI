@@ -301,22 +301,32 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
-/* =========================
-   DATA FILE
-========================= */
+// =========================
+// DATA FILE (Vercel-safe)
+// =========================
 
-const FILE = path.join(__dirname, "..", "data.json");
+const FILE =
+  process.env.VERCEL
+    ? "/tmp/data.json"
+    : path.join(__dirname, "..", "data.json");
 
-// ✅ SAFE initialization
+// safe initialization
 try {
   if (!fs.existsSync(FILE)) {
     fs.writeFileSync(
       FILE,
-      JSON.stringify({ users: {} }, null, 2)
+      JSON.stringify(
+        { users: {} },
+        null,
+        2
+      )
     );
   }
 } catch (err) {
-  console.error("FILE INIT ERROR:", err);
+  console.error(
+    "FILE INIT ERROR:",
+    err
+  );
 }
 
 /* =========================
